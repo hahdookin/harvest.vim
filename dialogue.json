@@ -1,0 +1,16 @@
+{
+    "characters": {
+        "Pippin": {
+            "intro": "Hey there! So, I've been customizing\nmy Vim setup lately and I wanted to share\nsome of my favorite settings with you.\n\nOne of the first things I like to do\nis turn on line numbering. It's such a\nsimple thing, but it really helps when\nI'm working on code and need to refer\nto specific lines.\n\nI also like to set the default\ntab width to 4 spaces. It just looks\ncleaner to me and makes it easier to\nread the code.\n\nFinally, I like to enable syntax highlighting\nso that different parts of the code are\ncolor-coded. It helps me quickly see\nwhich parts are comments, strings, or\nkeywords.\n\nWhat kind of settings do you have in\nyour .vimrc file?"
+        },
+        "Daisy": {},
+        "Bubbles": {},
+        "Fluffy": {},
+        "Snuggles": {},
+        "Sprinkles": {},
+        "Teddy": {},
+        "Rosie": {},
+        "Cupcake": {},
+        "Noodle": {}
+    }
+}

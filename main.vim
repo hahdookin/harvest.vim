@@ -33,6 +33,7 @@ def Game(manager: dict<any>): dict<any>
         state_machine: null
     }
     self.state_machine = StateMachine(self, "Overworld")
+    #self.state_machine = StateMachine(self, "TitleScreen")
     self.player = Player()
     self.town = Town()
 
@@ -45,23 +46,22 @@ def Game(manager: dict<any>): dict<any>
 
         # Create framebuffer (array of strings) to send to screen (manager)
         var lines = []
-        for line in self.state_machine.current_state.GetFrame()
-            if type(line) != v:t_string
-                # Button here
-                lines->add(line.ToString())
-                var this_button_linenr = lines->len()
-                self.manager.AddButton(line, this_button_linenr)
-            else
-                lines->add(line)
-            endif
+        for list in self.state_machine.current_state.GetFrame()
+            var line = ""
+            for item in list
+                if type(item) != v:t_string
+                    # Button here
+                    self.manager.AddButton(item, lines->len() + 1, line->len() + 1)
+                    line ..= item.ToString()
+                else
+                    # String here
+                    line ..= item
+                endif
+            endfor
+            lines->add(line)
         endfor
         self.manager.DrawLines(lines)
     }
-
-    self.PrintState = () => {
-        echow self.state_machine.current_state.GetName()
-    }
-
 
     return self
 enddef
@@ -80,10 +80,28 @@ def Manager(bufnr: number): dict<any>
     setbufvar(bufnr, '&modifiable', 0)
 
     setbufvar(bufnr, '&number', 0)
+    setbufvar(bufnr, '&relativenumber', 0)
     setbufvar(bufnr, '&rnu', 0)
 
-    var cmd = 'noremap <silent> <CR> :call g:manager.OnEnterPressed(line("."))<CR>'
-    autocmd_add([{ event: 'BufEnter', bufnr: self.bufnr, cmd: cmd}])
+    var cmds = [
+        'noremap <buffer><silent> <CR> :call g:manager.OnEnterPressed(line("."), col("."))<CR>',
+    ]
+    for cmd in cmds
+        autocmd_add([{ event: 'BufEnter', bufnr: self.bufnr, cmd: cmd}])
+    endfor
+
+    self.NextButton = () => {
+        var cursor = TextPosition(line('.'), col('.'))
+        # Find closest 
+        for button in self.buttons
+            var btn_pos = button.button.pos
+            if btn_pos.lnum < cursor.lnum 
+                continue
+            elseif btn_pos.lnum == cursor.lnum
+                continue
+            endif
+        endfor
+    }
 
     self.AddBufLine = (text: string) => {
         setbufvar(bufnr, '&modifiable', 1)
@@ -100,6 +118,7 @@ def Manager(bufnr: number): dict<any>
     self.Open = () => {
         if !self.IsOpenInWindow()
             execute "sbuffer " .. bufnr
+            resize 14
         endif
     }
     self.CloseAllWindows = () => {
@@ -145,65 +164,45 @@ def Manager(bufnr: number): dict<any>
     self.DrawLines = (lines) => {
         self.ClearBuffer()
         if lines->len() > 0
-            # Check if a lines starts with <<[DELAY] and extract the delay
             for i in range(lines->len())
-                #var match = matchstrpos(lines[i], "^<<[.\\{-\}\\]")
-                #if match[0] != ""
-                    #var nr_part = str2nr(match[0][match[1] + 3 : match[2] - 1])
-                    #if nr_part == 0
-                        #lines[i] = lines[i][1 : ]
-                        #lines[i] = DelayedText(lines[i])
-                    #else
-                        #lines[i] = DelayedText(lines[i], nr_part)
-                    #endif
-                #else
-                    #lines[i] = DelayedText(lines[i])
-                #endif
                 if type(lines[i]) == v:t_string
                     lines[i] = DelayedText(lines[i])
                 endif
             endfor
 
-            execute $'sleep {lines[0].delay}m'
-            self.SetBufLine(1, lines[0].text)
-            redraw!
-
-            for i in range(1, lines->len() - 1)
+            for i in range(lines->len())
                 execute $'sleep {lines[i].delay}m'
-                self.AddBufLine(lines[i].text)
+                if i == 0
+                    self.SetBufLine(1, lines[i].text)
+                else
+                    self.AddBufLine(lines[i].text)
+                endif
                 redraw!
             endfor
 
             if self.buttons->len() > 0
-                cursor(self.buttons[0].linenr, 1)
+                self.buttons[0].pos.CursorTo()
             endif
         endif
     }
 
-    self.AddButton = (button, linenr = -1) => {
-        #self.AddBufLine(button.ToString())
-        var ln = linenr
-        if linenr == -1
-            ln = line('$', self.GetWinId()) - 1
-        endif
-        self.buttons->add({ linenr: ln, button: button })
+    self.AddButton = (button, linenr = -1, col = -1) => {
+        var pos = TextPosition(linenr, col)
+        self.buttons->add({ pos: pos, button: button })
     }
 
-    self.OnEnterPressed = (linenr) => {
+    self.OnEnterPressed = (lnum, col) => {
+        var text_pos = TextPosition(lnum, col)
         for button in self.buttons
-            if button.linenr == linenr
+            var btn_display_length = button.button.DisplayLength()
+            var btn_start = button.pos
+            var btn_end = TextPosition(btn_start.lnum, btn_start.col + btn_display_length - 1)
+            if text_pos.Between(btn_start, btn_end)
                 button.button.OnSelect()
                 return
             endif
         endfor
     }
-
-    self.PrintButtons = () => {
-        for btn in self.buttons
-            echow btn
-        endfor
-    }
-
 
     return self
 enddef
@@ -216,5 +215,6 @@ g:manager.Open()
 g:game.Render()
 
 map <leader>hh <ScriptCmd>g:manager.Toggle()<CR>
-map <leader>ho :echow g:game
+map <leader>ho :echo g:game
+map <leader>hi :echo g:manager
 

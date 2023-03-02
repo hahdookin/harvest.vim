@@ -6,6 +6,7 @@ const TitleScreen = states_ns.TitleScreen
 const StartGame = states_ns.StartGame
 const Overworld = states_ns.Overworld
 const FarmState = states_ns.FarmState
+const Dialogue = states_ns.Dialogue
 
 export def StateMachine(game_ref: dict<any>, starting_state_name: string): dict<any>
     final self: dict<any> = {
@@ -17,7 +18,8 @@ export def StateMachine(game_ref: dict<any>, starting_state_name: string): dict<
         "TitleScreen": TitleScreen(),
         "StartGame": StartGame(),
         "Overworld": Overworld(),
-        "FarmState": FarmState()
+        "FarmState": FarmState(),
+        "Dialogue": Dialogue()
     }
     self.states = states
     for state in self.states->values()
