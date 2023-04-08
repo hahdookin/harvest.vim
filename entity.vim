@@ -32,6 +32,7 @@ export def Player(): dict<any> # extends Entity
         hands: null,
         feet: null,
     }
+    self.items = ["a", "b", "c", "d"]
 
     return self
 enddef

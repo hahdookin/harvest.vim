@@ -6,35 +6,48 @@ const TitleScreen = states_ns.TitleScreen
 const StartGame = states_ns.StartGame
 const Overworld = states_ns.Overworld
 const FarmState = states_ns.FarmState
+const ShopState = states_ns.ShopState
 const Dialogue = states_ns.Dialogue
 
 export def StateMachine(game_ref: dict<any>, starting_state_name: string): dict<any>
     final self: dict<any> = {
         current_state: null,
-        states: {},
-        game_ref: game_ref
+        game_ref: game_ref,
+        state_stack: []
     }
     var states = {
-        "TitleScreen": TitleScreen(),
-        "StartGame": StartGame(),
-        "Overworld": Overworld(),
-        "FarmState": FarmState(),
-        "Dialogue": Dialogue()
+        "TitleScreen": TitleScreen,
+        "StartGame": StartGame,
+        "Overworld": Overworld,
+        "FarmState": FarmState,
+        "ShopState": ShopState,
+        "Dialogue": Dialogue
     }
-    self.states = states
-    for state in self.states->values()
-        state.state_machine = self
-        state.game_ref = game_ref
-    endfor
-    self.current_state = states[starting_state_name]
-    self.current_state.Enter()
+
+    self.PushState = (state_name, msg = {}) => {
+        var state_instance = states[state_name]()
+        state_instance.AddStateMachine(self)
+        state_instance.AddGameRef(self.game_ref)
+        state_instance.Enter(msg)
+        self.state_stack->add(state_instance)
+    }
+    
+    self.PopState = () => {
+        self.state_stack[-1].Exit()
+        self.state_stack->remove(-1)
+    }
 
     self.TransitionTo = (state_name, msg = {}) => {
-        g:manager.buttons = []
-        self.current_state.Exit()
-        self.current_state = self.states[state_name]
-        self.current_state.Enter(msg)
+        self.game_ref.manager.buttons = []
+        self.PopState()
+        self.PushState(state_name, msg)
     }
+
+    self.GetCurrentState = () => {
+        return self.state_stack[-1]
+    }
+
+    self.PushState(starting_state_name)
 
     return self
 enddef

@@ -1,6 +1,6 @@
 vim9script
 
-export def Button(text: string, OnSelect = null_function): dict<any>
+export def Button(text: string, OnSelect = null_function, display_fmt = '<%s>'): dict<any>
     final self: dict<any> = {
         text: text
     }
@@ -8,7 +8,7 @@ export def Button(text: string, OnSelect = null_function): dict<any>
     self.OnSelect = OnSelect
 
     self.ToString = () => {
-        return $'<{self.text}>'
+        return printf(display_fmt, self.text)
     }
 
     self.DisplayLength = () => {

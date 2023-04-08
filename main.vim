@@ -13,7 +13,10 @@ const Enemy = Entity.Enemy
 const Attack = Ability.Attack
 const StateMachine = state_machine.StateMachine
 const Town = states.Town
+const Farm = states.Farm
 const TextPosition = text_position.TextPosition
+const PlantedCrop = states.PlantedCrop
+const Crop = states.Crop
 
 def DelayedText(text: string, delay: number = 50): dict<any>
     final self: dict<any> = {
@@ -29,6 +32,7 @@ def Game(manager: dict<any>): dict<any>
     final self: dict<any> = {
         town: null,
         player: null,
+        farm: null,
         manager: manager,
         state_machine: null
     }
@@ -36,17 +40,21 @@ def Game(manager: dict<any>): dict<any>
     #self.state_machine = StateMachine(self, "TitleScreen")
     self.player = Player()
     self.town = Town()
+    self.farm = Farm()
+    var now = localtime()
+    self.farm.AddCrop(PlantedCrop(Crop("Carrot", 30), now))
+    self.farm.AddCrop(PlantedCrop(Crop("Eggplant", 30), now))
 
     self.Render = () => {
         # Clear previous buttons
         self.manager.buttons = []
 
         # Update state logic
-        self.state_machine.current_state.Update()
+        self.state_machine.GetCurrentState().Update()
 
         # Create framebuffer (array of strings) to send to screen (manager)
         var lines = []
-        for list in self.state_machine.current_state.GetFrame()
+        for list in self.state_machine.GetCurrentState().GetFrame()
             var line = ""
             for item in list
                 if type(item) != v:t_string
@@ -85,6 +93,7 @@ def Manager(bufnr: number): dict<any>
 
     var cmds = [
         'noremap <buffer><silent> <CR> :call g:manager.OnEnterPressed(line("."), col("."))<CR>',
+        'noremap <buffer><silent> <TAB> :call g:manager.NextButton()<CR>',
     ]
     for cmd in cmds
         autocmd_add([{ event: 'BufEnter', bufnr: self.bufnr, cmd: cmd}])
@@ -94,11 +103,13 @@ def Manager(bufnr: number): dict<any>
         var cursor = TextPosition(line('.'), col('.'))
         # Find closest 
         for button in self.buttons
-            var btn_pos = button.button.pos
+            var btn_pos = button.pos
             if btn_pos.lnum < cursor.lnum 
                 continue
             elseif btn_pos.lnum == cursor.lnum
-                continue
+                if btn_pos.col > cursor.col
+                    button.pos.CursorTo()
+                endif
             endif
         endfor
     }
