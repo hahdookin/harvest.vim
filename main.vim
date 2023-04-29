@@ -30,17 +30,22 @@ enddef
 
 def Game(manager: dict<any>): dict<any>
     final self: dict<any> = {
+        save_data: null,
         town: null,
         player: null,
         farm: null,
         manager: manager,
         state_machine: null
     }
+    const json = readfile("./save_data.json")->join()
+    self.save_data = json_decode(json)
+    echow self.save_data
     self.state_machine = StateMachine(self, "Overworld")
-    #self.state_machine = StateMachine(self, "TitleScreen")
+    # self.state_machine = StateMachine(self, "TitleScreen")
     self.player = Player()
     self.town = Town()
     self.farm = Farm()
+
     var now = localtime()
     self.farm.AddCrop(PlantedCrop(Crop("Carrot", 30), now))
     self.farm.AddCrop(PlantedCrop(Crop("Eggplant", 30), now))
@@ -69,6 +74,16 @@ def Game(manager: dict<any>): dict<any>
             lines->add(line)
         endfor
         self.manager.DrawLines(lines)
+    }
+
+    self.Save = () => {
+        var player_data = {
+            "name": self.player.name,
+            "gold": self.player.gold }
+        var data = {
+            "last_save": str2nr(strftime("%s")),
+            "player": player_data }
+        writefile([json_encode(data)], './save_data.json')
     }
 
     return self
@@ -182,7 +197,7 @@ def Manager(bufnr: number): dict<any>
             endfor
 
             for i in range(lines->len())
-                execute $'sleep {lines[i].delay}m'
+                # execute $'sleep {lines[i].delay}m'
                 if i == 0
                     self.SetBufLine(1, lines[i].text)
                 else

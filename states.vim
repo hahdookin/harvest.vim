@@ -5,7 +5,26 @@ import "./button.vim"
 import "./math.vim" as Math
 import "./ui.vim" as UI
 
-var npcs = ["Pippin", "Daisy", "Bubbles", "Fluffy", "Snuggles", "Sprinkles", "Teddy", "Rosie", "Cupcake", "Noodle"]
+var npcs = [
+    'Blossom',
+    'Bluebell',
+    'Bubbles', 
+    'Cupcake', 
+    'Daisy', 
+    'Fluffy', 
+    'Fuzzy',
+    'Honeycomb',
+    'Noodle',
+    'Pippin', 
+    'Poppyseed'
+    'Puddles',
+    'Rosie', 
+    'Sherbert',
+    'Snuggles', 
+    'Sprinkles', 
+    'Sunny',
+    'Teddy', 
+]
 
 const Button = button.Button
 const TEXT_WIDTH = 80
@@ -265,9 +284,15 @@ export def ShopState(): dict<any>
 
     self.items = []
 
+    var overworld_btn = Button("Overworld", () => {
+        self.state_machine.TransitionTo("Overworld")
+        self.game_ref.Render()
+    })
+
     self.GetFrame = () => {
         var player = self.game_ref.player
         return [
+            [overworld_btn]
         ]
     }
 
@@ -296,6 +321,9 @@ export def Overworld(): dict<any>
     var open_inventory_btn = Button("Inventory", () => {
         self.show_inventory = true
     })
+    var save_game_btn = Button("Save", () => {
+        self.game_ref.Save()
+    })
 
     self.GetIntroText = () => {
         return $'It is: {strftime("%I:%M %p on %A")}'
@@ -311,6 +339,7 @@ export def Overworld(): dict<any>
         })
         var left = [self.GetIntroText(), "", $"Today's Visitor: {visitor}", btn]
         left += [goto_farm_btn, goto_shop_btn, open_inventory_btn]
+        left += [save_game_btn]
         var right = Art.mountains
         return UI.JustifyLines(left, right, TEXT_WIDTH)
     }
