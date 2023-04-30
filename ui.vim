@@ -5,6 +5,14 @@ import "./button.vim"
 const Button = button.Button
 const TEXT_WIDTH = 80
 
+def UIEleScreenLen(ele: any): number
+    return type(ele) != v:t_string ? ele.ToString()->len() : ele->len()
+enddef
+
+def UILineScreenLen(line: list<any>): number
+    return line->reduce((acc, ele) => acc + UIEleScreenLen(ele), 0)
+enddef
+
 export def CenterLine(content: any, max_len: number): list<any>
     var res = []
 
@@ -86,6 +94,43 @@ export def JustifyLine(left: any, right: any, max_len: number): list<any>
     var spaces = max_len - left_str->len() - right_str->len()
 
     return [left, repeat(' ', spaces), right]
+enddef
+
+export def JustifyLineX(left: list<any>, right: list<any>, max_len: number): list<any>
+    const Reducer = (acc, val) => {
+        return acc + (type(val) != v:t_string ? val.ToString()->len() : val->len())
+    }
+    var left_len = left->reduce(Reducer, 0)
+    var right_len = right->reduce(Reducer, 0)
+    var spaces = max_len - left_len - right_len
+    var res = []
+    return left + [repeat(' ', spaces)] + right
+enddef
+
+export def JustifyLinesX(left: list<list<any>>, right: list<list<any>>, max_len: number): list<list<any>>
+    var result = []
+
+    var shorter_length = min([left->len(), right->len()])
+
+    var i = 0
+    while i < shorter_length
+        #var spaces = max_len - left[i]->len() - right[i]->len()
+        #result->add(left[i] .. repeat(" ", spaces) .. right[i])
+        result->add(JustifyLineX(left[i], right[i], max_len))
+        ++i
+    endwhile
+    while i < left->len()
+        var spaces = max_len - UILineScreenLen(left[i])
+        result->add(left[i] + [repeat(" ", spaces)])
+        ++i
+    endwhile
+    while i < right->len()
+        var spaces = max_len - UILineScreenLen(right[i])
+        result->add([repeat(" ", spaces)] + right[i])
+        ++i
+    endwhile
+
+    return result
 enddef
 
 export def JustifyLines(left: list<any>, right: list<any>, max_len: number): list<list<any>>

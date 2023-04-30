@@ -322,15 +322,28 @@ export def ShopState(): dict<any>
 
     self.GetFrame = () => {
         var player = self.game_ref.player
-        var res: list<any> = []
-        res->add(["Welcome to the shop!"])
+        var left: list<any> = []
+        left->add(["Welcome to the shop!"])
         for line in lines
-            res->add(line)
+            left->add(line)
         endfor
-        res->add([""])
-        res->add([overworld_btn])
-        return res
+        left->add([""])
+        left->add([overworld_btn])
+        var right = Art.fish_3->mapnew((_, val) => [val])
+        return UI.JustifyLinesX(left, right, TEXT_WIDTH)
+        # return left
     }
+    # self.GetFrame = () => {
+    #     var player = self.game_ref.player
+    #     var left: list<any> = [
+    #         ["Left", Button("BUTTON"), "MORE LEFT"],
+    #         ["===================="],
+    #         ["Left", Button("BUTTON"), "MORE LEFT"],
+    #         [overworld_btn]
+    #     ]
+    #     var right = Art.fish_3->mapnew((_, val) => [val])
+    #     return UI.JustifyLinesX(left, right, TEXT_WIDTH)
+    # }
 
     return self
 enddef
