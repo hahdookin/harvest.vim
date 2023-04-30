@@ -39,7 +39,7 @@ def Game(manager: dict<any>): dict<any>
     }
     const json = readfile("./save_data.json")->join()
     self.save_data = json_decode(json)
-    echow self.save_data
+    # echow self.save_data
     self.state_machine = StateMachine(self, "Overworld")
     # self.state_machine = StateMachine(self, "TitleScreen")
     self.player = Player()
@@ -92,7 +92,8 @@ enddef
 def Manager(bufnr: number): dict<any>
     final self: dict<any> = {
         bufnr: bufnr,
-        buttons: []
+        buttons: [],
+        button_index: 0,
     }
 
     bufload(bufnr)
@@ -108,25 +109,21 @@ def Manager(bufnr: number): dict<any>
 
     var cmds = [
         'noremap <buffer><silent> <CR> :call g:manager.OnEnterPressed(line("."), col("."))<CR>',
-        'noremap <buffer><silent> <TAB> :call g:manager.NextButton()<CR>',
+        'noremap <buffer><silent> <TAB>   :call g:manager.NextButton(1)<CR>',
+        'noremap <buffer><silent> <S-TAB> :call g:manager.NextButton(-1)<CR>',
     ]
     for cmd in cmds
         autocmd_add([{ event: 'BufEnter', bufnr: self.bufnr, cmd: cmd}])
     endfor
 
-    self.NextButton = () => {
-        var cursor = TextPosition(line('.'), col('.'))
-        # Find closest 
-        for button in self.buttons
-            var btn_pos = button.pos
-            if btn_pos.lnum < cursor.lnum 
-                continue
-            elseif btn_pos.lnum == cursor.lnum
-                if btn_pos.col > cursor.col
-                    button.pos.CursorTo()
-                endif
-            endif
-        endfor
+    self.NextButton = (offset: number) => {
+        if self.buttons->len() == 0
+            return
+        endif
+        self.button_index += offset
+        self.button_index %= self.buttons->len()
+        var btn_pos = self.buttons[self.button_index].pos
+        btn_pos.CursorTo()
     }
 
     self.AddBufLine = (text: string) => {
@@ -208,6 +205,7 @@ def Manager(bufnr: number): dict<any>
 
             if self.buttons->len() > 0
                 self.buttons[0].pos.CursorTo()
+                self.button_index = 0
             endif
         endif
     }

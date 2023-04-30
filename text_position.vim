@@ -21,5 +21,9 @@ export def TextPosition(lnum: number, col: number): dict<any>
         cursor(self.lnum, self.col)
     }
 
+    self.ToString = () => {
+        return $"{{ lnum: {self.lnum}, col: {self.col} }}"
+    }
+
     return self
 enddef

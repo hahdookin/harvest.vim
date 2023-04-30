@@ -16,7 +16,7 @@ var npcs = [
     'Honeycomb',
     'Noodle',
     'Pippin', 
-    'Poppyseed'
+    'Poppyseed',
     'Puddles',
     'Rosie', 
     'Sherbert',
@@ -160,7 +160,7 @@ export def GameState(): dict<any>
     self.Update = () => {
 
     }
-    self.GetFrame = (): list<list<any>> => []
+    self.GetFrame = (): list<list<any>> => [] # List<List<Button | String>>
     self.Exit = () => {
 
     }
@@ -245,7 +245,6 @@ export def StartGame(): dict<any>
         if self.phase == 0
             var left = phase_0_dialog + [name_enter_btn, town_enter_btn, "", confirm_btn]
             var right = Art.mountains
-            #return UI.JustifyLines(left, right, TEXT_WIDTH)
             return UI.JustifyLines(left, right, TEXT_WIDTH)
         else
             var phase_1_dialog =<< trim eval END
@@ -282,18 +281,55 @@ enddef
 export def ShopState(): dict<any>
     final self = GameState()
 
-    self.items = []
-
     var overworld_btn = Button("Overworld", () => {
         self.state_machine.TransitionTo("Overworld")
         self.game_ref.Render()
     })
 
+    const rows = 3
+    const cols = 4
+    const slots = rows * cols
+    self.buttons = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
+    self.buttons->map((_, val) => Button(val, () => {
+        echow $"Button: {val}"
+    }, '%s'))
+    for i in range(slots - self.buttons->len())
+        self.buttons->add(null)
+    endfor
+
+    const horiz_sep_start = '+---'
+    const horiz_sep_end = '---+'
+    const horiz_sep_mid = repeat(['+'], cols - 1)->join('---')
+    const horiz_sep = horiz_sep_start .. horiz_sep_mid .. horiz_sep_end
+    const vert_sep_start = '| '
+    const vert_sep_mid   = ' | '
+    const vert_sep_end   = ' |'
+
+    var lines: list<any> = [[horiz_sep]]
+    var cur_row: list<any> = []
+    for row in range(rows)
+        cur_row->add(vert_sep_start)
+        for col in range(cols)
+            var btn = self.buttons[row * cols + col]
+            cur_row->add(btn ?? " ")
+            cur_row->add(col == cols - 1 ? '' : vert_sep_mid)
+        endfor
+        cur_row->add(vert_sep_end)
+        lines->add(cur_row)
+        lines->add([horiz_sep])
+        cur_row = []
+    endfor
+
     self.GetFrame = () => {
         var player = self.game_ref.player
-        return [
-            [overworld_btn]
-        ]
+        var res: list<any> = []
+        res->add(["Welcome to the shop!"])
+        for line in lines
+            res->add(line)
+        endfor
+        res->add([""])
+        res->add([overworld_btn])
+        return res
     }
 
     return self
@@ -339,7 +375,7 @@ export def Overworld(): dict<any>
         })
         var left = [self.GetIntroText(), "", $"Today's Visitor: {visitor}", btn]
         left += [goto_farm_btn, goto_shop_btn, open_inventory_btn]
-        left += [save_game_btn]
+        left += ["", save_game_btn]
         var right = Art.mountains
         return UI.JustifyLines(left, right, TEXT_WIDTH)
     }
