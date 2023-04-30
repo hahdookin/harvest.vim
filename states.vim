@@ -191,11 +191,15 @@ export def TitleScreen(): dict<any>
     }
 
     self.GetFrame = () => {
-        return UI.CenterLines(Art.intro_art + [
-            "Animal Crossing",
-            "A vim life-sim by Chris Pane",
-            new_game_btn,
-            exit_btn], TEXT_WIDTH)
+        var art_lines = Art.ArtToUIFrame(Art.intro_art)
+        var text_lines = [
+            ["Animal Crossing"],
+            ["A vim life-sim by Chris Pane"],
+            [new_game_btn],
+            [exit_btn],
+        ]
+        var buffer = art_lines + text_lines
+        return UI.CenterLines(buffer, TEXT_WIDTH)
     }
 
     self.Exit = () => {
@@ -243,8 +247,14 @@ export def StartGame(): dict<any>
     END
     self.GetFrame = () => {
         if self.phase == 0
-            var left = phase_0_dialog + [name_enter_btn, town_enter_btn, "", confirm_btn]
-            var right = Art.mountains
+            var left = [
+                [name_enter_btn],
+                [town_enter_btn],
+                [""],
+                [confirm_btn],
+            ]
+            left = Art.ArtToUIFrame(phase_0_dialog) + left
+            var right = Art.ArtToUIFrame(Art.mountains)
             return UI.JustifyLines(left, right, TEXT_WIDTH)
         else
             var phase_1_dialog =<< trim eval END
@@ -255,8 +265,12 @@ export def StartGame(): dict<any>
                 self.state_machine.TransitionTo("Overworld")
                 self.game_ref.Render()
             })
-            var left = phase_1_dialog + ["", btn]
-            var right = Art.mountains
+            var left = [
+                [""],
+                [btn],
+            ]
+            left = Art.ArtToUIFrame(phase_1_dialog) + left
+            var right = Art.ArtToUIFrame(Art.mountains)
             return UI.JustifyLines(left, right, TEXT_WIDTH)
         endif
     }
@@ -329,8 +343,9 @@ export def ShopState(): dict<any>
         endfor
         left->add([""])
         left->add([overworld_btn])
-        var right = Art.fish_3->mapnew((_, val) => [val])
-        return UI.JustifyLinesX(left, right, TEXT_WIDTH)
+        # var right = Art.fish_3->mapnew((_, val) => [val])
+        var right = Art.ArtToUIFrame(Art.fish_3)
+        return UI.JustifyLines(left, right, TEXT_WIDTH)
         # return left
     }
     # self.GetFrame = () => {
@@ -386,10 +401,21 @@ export def Overworld(): dict<any>
             self.state_machine.PushState("Dialogue", { with: visitor })
             self.game_ref.Render()
         })
-        var left = [self.GetIntroText(), "", $"Today's Visitor: {visitor}", btn]
-        left += [goto_farm_btn, goto_shop_btn, open_inventory_btn]
-        left += ["", save_game_btn]
-        var right = Art.mountains
+        var left = [
+            [self.GetIntroText()], 
+            [""], 
+            [$"Today's Visitor: {visitor}"], 
+            [btn],
+            [goto_farm_btn],
+            [goto_shop_btn],
+            [open_inventory_btn],
+            [""], 
+            [save_game_btn],
+        ]
+        # var left = [self.GetIntroText(), "", $"Today's Visitor: {visitor}", btn]
+        # left += [goto_farm_btn, goto_shop_btn, open_inventory_btn]
+        # left += ["", save_game_btn]
+        var right = Art.ArtToUIFrame(Art.mountains)
         return UI.JustifyLines(left, right, TEXT_WIDTH)
     }
 

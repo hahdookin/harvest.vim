@@ -2,6 +2,10 @@ vim9script
 
 set cpo+=C
 
+export def ArtToUIFrame(art: list<string>): list<list<string>>
+    return art->mapnew((_, val) => [val])
+enddef
+
 export var intro_art =<< END
 .-=-=-=-=-=-=-=-=-=-=-=-=-.
 |   .           .         |
