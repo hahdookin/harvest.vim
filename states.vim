@@ -4,6 +4,7 @@ import "./art.vim" as Art
 import "./button.vim"
 import "./math.vim" as Math
 import "./ui.vim" as UI
+import "./item.vim"
 
 var npcs = [
     'Blossom',
@@ -27,6 +28,7 @@ var npcs = [
 ]
 
 const Button = button.Button
+const Item = item.Item
 const TEXT_WIDTH = 80
 
 var json_str = join(readfile("./dialogue.json"), "\n")
@@ -58,15 +60,20 @@ export def Farm(): dict<any>
     return self
 enddef
 
-def Item(name: string, buy_price: number, sell_price: number): dict<any>
-    final self: dict<any> = {
-        name: name,
-        buy_price: buy_price,
-        sell_price: sell_price,
-        category: '',
-    }
+export def Shop(): dict<any>
+    final self: dict<any> = {}
+    self.items = [
+        Item("Fishing Pole I", 100, 50, 'e'),
+        Item("Shovel I", 200, 100, 'e'),
+        Item("Hoe II", 300, 150, 'e'),
+        Item("Couch", 300, 150, 'c'),
+        Item("Jeans", 300, 150, 'c'),
+        Item("Iced Coffee", 300, 150, 'f'),
+        Item("Matcha Tea Powder", 300, 150, 'f'),
+    ]
     return self
 enddef
+
 
 def Seed(grows_into: dict<any>): dict<any>
     final self: dict<any> = {
@@ -300,10 +307,18 @@ export def ShopState(): dict<any>
         self.game_ref.Render()
     })
 
+    self.Update = () => {
+        # echow self.game_ref
+    }
+
     const rows = 3
     const cols = 4
     const slots = rows * cols
     self.buttons = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
+    # self.buttons = self.items->mapnew((_, item) => Button(item.category, () => {
+    #     # echow $"Name: {item.name} Buy: {item.buy_price} Sell: {item.sell_price}"
+    #     echow $"Name: {item.name}"
+    # }, '%s'))
     self.buttons->map((_, val) => Button(val, () => {
         echow $"Button: {val}"
     }, '%s'))
@@ -344,21 +359,29 @@ export def ShopState(): dict<any>
         left->add([""])
         left->add([overworld_btn])
         # var right = Art.fish_3->mapnew((_, val) => [val])
-        var right = Art.ArtToUIFrame(Art.fish_3)
+        var right = Art.ArtToUIFrame(Art.character_1)
         return UI.JustifyLines(left, right, TEXT_WIDTH)
         # return left
     }
-    # self.GetFrame = () => {
-    #     var player = self.game_ref.player
-    #     var left: list<any> = [
-    #         ["Left", Button("BUTTON"), "MORE LEFT"],
-    #         ["===================="],
-    #         ["Left", Button("BUTTON"), "MORE LEFT"],
-    #         [overworld_btn]
-    #     ]
-    #     var right = Art.fish_3->mapnew((_, val) => [val])
-    #     return UI.JustifyLinesX(left, right, TEXT_WIDTH)
-    # }
+
+    return self
+enddef
+
+export def FishState(): dict<any>
+    final self = GameState()
+
+    var overworld_btn = Button("Overworld", () => {
+        self.state_machine.TransitionTo("Overworld")
+        self.game_ref.Render()
+    })
+
+    self.GetFrame = () => {
+        echow self.game_ref
+        return [
+            ["Hello"],
+            [overworld_btn],
+        ]
+    }
 
     return self
 enddef
@@ -375,11 +398,15 @@ export def Overworld(): dict<any>
     }
 
     var goto_farm_btn = Button("Farm", () => {
-        self.state_machine.TransitionTo("FarmState")
+        self.state_machine.PushState("FarmState")
         self.game_ref.Render()
     })
     var goto_shop_btn = Button("Shop", () => {
-        self.state_machine.TransitionTo("ShopState")
+        self.state_machine.PushState("ShopState")
+        self.game_ref.Render()
+    })
+    var start_fishing_btn = Button("Fish", () => {
+        self.state_machine.PushState("FishState")
         self.game_ref.Render()
     })
     var open_inventory_btn = Button("Inventory", () => {
@@ -409,6 +436,7 @@ export def Overworld(): dict<any>
             [goto_farm_btn],
             [goto_shop_btn],
             [open_inventory_btn],
+            [start_fishing_btn],
             [""], 
             [save_game_btn],
         ]

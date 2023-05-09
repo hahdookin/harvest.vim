@@ -1,8 +1,10 @@
 vim9script
 
 import "./ability.vim" as Ability
+import "./item.vim"
 
 const Attack = Ability.Attack
+const Item = item.Item
 
 def Entity(): dict<any>
     final self: dict<any> = {
@@ -33,6 +35,11 @@ export def Player(): dict<any> # extends Entity
         feet: null,
     }
     self.items = ["a", "b", "c", "d"]
+    # self.items = [
+    #     Item("Fishing Pole I", 100, 50),
+    #     Item("Shovel I", 200, 100),
+    #     Item("Hoe II", 300, 150),
+    # ]
 
     return self
 enddef

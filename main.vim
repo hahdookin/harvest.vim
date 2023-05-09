@@ -14,6 +14,7 @@ const Attack = Ability.Attack
 const StateMachine = state_machine.StateMachine
 const Town = states.Town
 const Farm = states.Farm
+const Shop = states.Shop
 const TextPosition = text_position.TextPosition
 const PlantedCrop = states.PlantedCrop
 const Crop = states.Crop
@@ -34,17 +35,20 @@ def Game(manager: dict<any>): dict<any>
         town: null,
         player: null,
         farm: null,
+        shop: null,
         manager: manager,
         state_machine: null
     }
     const json = readfile("./save_data.json")->join()
     self.save_data = json_decode(json)
     # echow self.save_data
-    self.state_machine = StateMachine(self, "Overworld")
-    # self.state_machine = StateMachine(self, "TitleScreen")
     self.player = Player()
     self.town = Town()
     self.farm = Farm()
+    self.shop = Shop()
+
+    self.state_machine = StateMachine(self, "Overworld")
+    # self.state_machine = StateMachine(self, "TitleScreen")
 
     var now = localtime()
     self.farm.AddCrop(PlantedCrop(Crop("Carrot", 30), now))
@@ -142,6 +146,7 @@ def Manager(bufnr: number): dict<any>
         if !self.IsOpenInWindow()
             execute "sbuffer " .. bufnr
             resize 14
+            setlocal winfixheight
         endif
     }
     self.CloseAllWindows = () => {

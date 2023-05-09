@@ -7,6 +7,7 @@ const StartGame = states_ns.StartGame
 const Overworld = states_ns.Overworld
 const FarmState = states_ns.FarmState
 const ShopState = states_ns.ShopState
+const FishState = states_ns.FishState
 const Dialogue = states_ns.Dialogue
 
 export def StateMachine(game_ref: dict<any>, starting_state_name: string): dict<any>
@@ -16,12 +17,13 @@ export def StateMachine(game_ref: dict<any>, starting_state_name: string): dict<
         state_stack: []
     }
     var states = {
-        "TitleScreen": TitleScreen,
-        "StartGame": StartGame,
-        "Overworld": Overworld,
-        "FarmState": FarmState,
-        "ShopState": ShopState,
-        "Dialogue": Dialogue
+        'TitleScreen': TitleScreen,
+        'StartGame': StartGame,
+        'Overworld': Overworld,
+        'FarmState': FarmState,
+        'ShopState': ShopState,
+        'FishState': FishState,
+        'Dialogue': Dialogue
     }
 
     self.PushState = (state_name, msg = {}) => {

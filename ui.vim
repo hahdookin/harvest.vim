@@ -41,33 +41,6 @@ export def CenterLines(lines: list<list<any>>, max_len: number): list<list<any>>
     return res
 enddef
 
-export def SpaceEvenlyX(contents: list<any>, max_len: number, margin = [0, 0]): list<any>
-    var res = []
-    var total_chars = UILineScreenLen(contents)
-    var actual_max_len = max_len - margin[0] - margin[1]
-    var spaces = actual_max_len - total_chars
-    var slots = contents->len() - 1
-    var spaces_per_slot = spaces / slots
-    var extra_spaces = spaces % slots
-
-    res->add(" "->repeat(margin[0]))
-    for i in range(contents->len())
-        res->add(contents[i])
-        if i != contents->len() - 1
-            var added = 0
-            if extra_spaces > 0
-                added = 1
-                extra_spaces -= 1
-            endif
-
-            res->add(repeat(" ", spaces_per_slot + added))
-        endif
-    endfor
-    res->add(" "->repeat(margin[1]))
-
-    return res
-enddef
-
 export def SpaceEvenly(contents: list<any>, max_len: number, margin = [0, 0]): list<any>
     var res = []
     var total_chars = 0
@@ -104,17 +77,20 @@ enddef
 # echo join(SpaceEvenly(["hello", Button("Btn"), "Another thing", Button("Other")], TEXT_WIDTH), "")
 # echo join(SpaceEvenly(["hello", "Another thing"], TEXT_WIDTH), "")
 
+# left: UILine
+# right: UILine
+# Returns: UILine
 export def JustifyLine(left: list<any>, right: list<any>, max_len: number): list<any>
-    const Reducer = (acc, val) => {
-        return acc + (type(val) != v:t_string ? val.ToString()->len() : val->len())
-    }
-    var left_len = left->reduce(Reducer, 0)
-    var right_len = right->reduce(Reducer, 0)
+    var left_len = UILineScreenLen(left)
+    var right_len = UILineScreenLen(right)
     var spaces = max_len - left_len - right_len
     var res = []
     return left + [repeat(' ', spaces)] + right
 enddef
 
+# left: UIFrame
+# right: UIFrame
+# Returns: UIFrame
 export def JustifyLines(left: list<list<any>>, right: list<list<any>>, max_len: number): list<list<any>>
     var result = []
 
@@ -122,8 +98,6 @@ export def JustifyLines(left: list<list<any>>, right: list<list<any>>, max_len: 
 
     var i = 0
     while i < shorter_length
-        #var spaces = max_len - left[i]->len() - right[i]->len()
-        #result->add(left[i] .. repeat(" ", spaces) .. right[i])
         result->add(JustifyLine(left[i], right[i], max_len))
         ++i
     endwhile
