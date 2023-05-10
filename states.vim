@@ -27,6 +27,14 @@ var npcs = [
     'Teddy', 
 ]
 
+const fishes = [
+  'Angelfish',
+  'Barracuda',
+  'Grouper',
+  'Piranha',
+  'Triggerfish',
+]
+
 const Button = button.Button
 const Item = item.Item
 const TEXT_WIDTH = 80
@@ -370,17 +378,116 @@ enddef
 export def FishState(): dict<any>
     final self = GameState()
 
+    const MAX_TICKS = 6
+    const FISHING_STATE = {
+        CAST: 0,
+        BITE: 1,
+        REEL: 2,
+        CATCH_SUCCESS: 3,
+        CATCH_FAILURE: 4,
+    }
+    const FISHING_STATE_MAP = [
+        'CAST',
+        'BITE',
+        'REEL',
+        'CATCH_SUCCESS',
+        'CATCH_FAILURE',
+    ]
+
+    const FISHING_STATE_FRAMES = [
+        [
+            Art.ArtToUIFrame(Art.fishing_mid_1),
+            Art.ArtToUIFrame(Art.fishing_mid_2),
+            Art.ArtToUIFrame(Art.fishing_mid_3),
+        ],
+        [
+            Art.ArtToUIFrame(Art.fishing_pre_catch),
+        ],
+        [
+            Art.ArtToUIFrame(Art.fishing_reeling_1),
+            Art.ArtToUIFrame(Art.fishing_reeling_2),
+        ],
+        [
+            Art.ArtToUIFrame(Art.fishing_catch_success),
+        ],
+        [
+            Art.ArtToUIFrame(Art.fishing_catch_failure),
+        ],
+    ]
+    const FISHING_STATE_FRAMES_COUNT = FISHING_STATE_FRAMES->mapnew((_, val) => {
+        return val->len()
+    })
+
+    self.fishing_state = FISHING_STATE.CAST
+    self.output = ''
+    self.progress = ''
+    self.catch = false
+    self.caught_fish_index = -1
+    self.num_ticks = 0
+    self.ticks_til_catch = 0
+
     var overworld_btn = Button("Overworld", () => {
         self.state_machine.TransitionTo("Overworld")
         self.game_ref.Render()
     })
 
+    self.DoFishing = () => {
+        self.progress = ''
+        self.catch = Math.Randf() > 0.5
+        self.num_ticks = 0
+        self.ticks_til_catch = self.catch ? 1 + Math.RandInt(MAX_TICKS - 1) : MAX_TICKS
+        self.caught_fish_index = Math.RandInt(fishes->len())
+        self.fishing_state = FISHING_STATE.CAST
+        self.game_ref.Render()
+        sleep 500m
+        self.fishing_state = FISHING_STATE.REEL
+        for i in range(self.ticks_til_catch)
+            self.progress ..= '-'
+            self.num_ticks += 1
+            self.game_ref.Render()
+            sleep 500m
+        endfor
+        
+        # Render the result
+        self.game_ref.Render()
+    }
+
+    var cast_btn = Button('Fish', self.DoFishing)
+
+    self.Update = () => {
+        self.output = FISHING_STATE_MAP[self.fishing_state]
+        if self.fishing_state == FISHING_STATE.CAST
+
+        elseif self.fishing_state == FISHING_STATE.REEL
+            if self.num_ticks == self.ticks_til_catch
+                if self.catch
+                    self.fishing_state = FISHING_STATE.CATCH_SUCCESS
+                else
+                    self.fishing_state = FISHING_STATE.CATCH_FAILURE
+                endif
+            endif
+        elseif self.fishing_state == FISHING_STATE.CATCH_SUCCESS
+            const caught_fish = fishes[self.caught_fish_index]
+            self.progress = $'Caught something! {caught_fish}'
+        elseif self.fishing_state == FISHING_STATE.CATCH_FAILURE
+            self.progress = 'Better luck next time...'
+        endif
+    }
+
     self.GetFrame = () => {
-        echow self.game_ref
-        return [
-            ["Hello"],
+        # echow self.game_ref
+        var left: list<any> = [
+            [self.progress],
+            [self.output],
+            [$"num_ticks: {self.num_ticks}"],
+            [$"ticks_til_catch: {self.ticks_til_catch}"],
+            [$"catch: {self.catch}"],
+            [cast_btn],
             [overworld_btn],
         ]
+        # var right = frames[Math.Clamp(self.progress->len(), 0, 2)]
+        # return UI.JustifyLines(left, right, TEXT_WIDTH)
+        return left
     }
 
     return self
