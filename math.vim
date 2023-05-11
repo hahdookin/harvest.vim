@@ -4,8 +4,13 @@ export def Randf(): float
     return (rand() * 1.0) / (2.0 * 2147483647.0)
 enddef
 
+# [min, max)
+export def RandRange(min: number, max: number): number
+    return (Randf() * (max - min) + min)->float2nr()
+enddef
+
 export def RandInt(max: number): number
-    return float2nr(floor(Randf() * (1.0 * max)))
+    return RandRange(0, max)
 enddef
 
 export def Clamp(n: number, min: number, max: number): number
