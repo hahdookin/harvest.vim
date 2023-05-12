@@ -401,6 +401,6 @@ var styled = Styled(fish_8, {
     padding: [0, 1, 0, 1],
     corners: "$$$$"
 })
-for line in styled
-    echo line
-endfor
+# for line in styled
+#     echo line
+# endfor
