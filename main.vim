@@ -5,6 +5,7 @@ import "./event.vim" as Event
 import "./entity.vim" as Entity
 import "./ability.vim" as Ability
 import "./state_machine.vim"
+import "./states/FarmState.vim"
 import "./states.vim"
 import "./text_position.vim"
 
@@ -13,11 +14,11 @@ const Enemy = Entity.Enemy
 const Attack = Ability.Attack
 const StateMachine = state_machine.StateMachine
 const Town = states.Town
-const Farm = states.Farm
+const Farm = FarmState.Farm
 const Shop = states.Shop
 const TextPosition = text_position.TextPosition
-const PlantedCrop = states.PlantedCrop
-const Crop = states.Crop
+const PlantedCrop = FarmState.PlantedCrop
+const Crop = FarmState.Crop
 
 def DelayedText(text: string, delay: number = 50): dict<any>
     final self: dict<any> = {

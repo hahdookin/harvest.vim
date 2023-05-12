@@ -37,6 +37,17 @@ const fishes_art = [
     Art.ArtToUIFrame(Art.fish_15),
 ]
 
+export def Fish(name: string, desc: string): dict<any>
+    final self: dict<any> = {
+        name: name,
+        desc: desc,
+        likelihood: 0.5,
+        season: "fall",
+    }
+
+    return self
+enddef
+
 export def FishingState(): dict<any>
     final self = GameState()
 

@@ -2,11 +2,12 @@ vim9script
 
 import "./states.vim" as states_ns
 import "./states/FishingState.vim"
+import "./states/FarmState.vim"
 
 const TitleScreen = states_ns.TitleScreen
 const StartGame = states_ns.StartGame
 const Overworld = states_ns.Overworld
-const FarmState = states_ns.FarmState
+# const FarmState = states_ns.FarmState
 const ShopState = states_ns.ShopState
 # const FishState = states_ns.FishState
 # const FishState = states_ns.FishState
@@ -22,7 +23,7 @@ export def StateMachine(game_ref: dict<any>, starting_state_name: string): dict<
         'TitleScreen': TitleScreen,
         'StartGame': StartGame,
         'Overworld': Overworld,
-        'FarmState': FarmState,
+        'FarmState': FarmState.FarmState,
         'ShopState': ShopState,
         'FishingState': FishingState.FishingState,
         'Dialogue': Dialogue
