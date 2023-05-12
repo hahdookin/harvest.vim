@@ -2,14 +2,14 @@ vim9script
 
 import "../art.vim" as Art
 import "../button.vim"
+import "../globals.vim"
 import "../math.vim" as Math
 import "../ui.vim" as UI
 import "../states.vim"
 
-const TEXT_WIDTH = 80
-
 const GameState = states.GameState
 const Button = button.Button
+const TEXT_WIDTH = globals.TEXT_WIDTH
 
 const fishes = [
   'Angelfish',
@@ -17,6 +17,24 @@ const fishes = [
   'Grouper',
   'Piranha',
   'Triggerfish',
+]
+
+const fishes_art = [
+    Art.ArtToUIFrame(Art.fish_1),
+    Art.ArtToUIFrame(Art.fish_2),
+    Art.ArtToUIFrame(Art.fish_3),
+    Art.ArtToUIFrame(Art.fish_4),
+    Art.ArtToUIFrame(Art.fish_5),
+    Art.ArtToUIFrame(Art.fish_6),
+    Art.ArtToUIFrame(Art.fish_7),
+    Art.ArtToUIFrame(Art.fish_8),
+    Art.ArtToUIFrame(Art.fish_9),
+    Art.ArtToUIFrame(Art.fish_10),
+    Art.ArtToUIFrame(Art.fish_11),
+    Art.ArtToUIFrame(Art.fish_12),
+    Art.ArtToUIFrame(Art.fish_13),
+    Art.ArtToUIFrame(Art.fish_14),
+    Art.ArtToUIFrame(Art.fish_15),
 ]
 
 export def FishingState(): dict<any>
