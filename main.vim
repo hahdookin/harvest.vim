@@ -4,6 +4,7 @@ import "./art.vim" as Art
 import "./event.vim" as Event
 import "./entity.vim" as Entity
 import "./ability.vim" as Ability
+import "./globals.vim"
 import "./state_machine.vim"
 import "./states/FarmState.vim"
 import "./states.vim"
@@ -40,20 +41,22 @@ def Game(manager: dict<any>): dict<any>
         manager: manager,
         state_machine: null
     }
-    const json = readfile("./save_data.json")->join()
-    self.save_data = json_decode(json)
-    # echow self.save_data
-    self.player = Player()
-    self.town = Town()
-    self.farm = Farm()
-    self.shop = Shop()
+    self.OnCreate = () => {
+        # const json = readfile("./save_data.json")->join()
+        self.save_data = self.Load()
+        # echow self.save_data
+        self.player = Player()
+        self.town = Town()
+        self.farm = Farm()
+        self.shop = Shop()
 
-    self.state_machine = StateMachine(self, "Overworld")
-    # self.state_machine = StateMachine(self, "TitleScreen")
+        self.state_machine = StateMachine(self, "Overworld")
+        # self.state_machine = StateMachine(self, "TitleScreen")
 
-    var now = localtime()
-    self.farm.AddCrop(PlantedCrop(Crop("Carrot", 30), now))
-    self.farm.AddCrop(PlantedCrop(Crop("Eggplant", 30), now))
+        var now = localtime()
+        self.farm.AddCrop(PlantedCrop(Crop("Carrot", 30), now))
+        self.farm.AddCrop(PlantedCrop(Crop("Eggplant", 30), now))
+    }
 
     self.Render = () => {
         # Clear previous buttons
@@ -81,6 +84,12 @@ def Game(manager: dict<any>): dict<any>
         self.manager.DrawLines(lines)
     }
 
+    self.Load = () => {
+        const json_str = readfile(globals.SAVE_DATA_LOCATION)->join()
+        const save_data = json_decode(json_str)
+        return save_data
+    }
+
     self.Save = () => {
         var player_data = {
             "name": self.player.name,
@@ -88,7 +97,7 @@ def Game(manager: dict<any>): dict<any>
         var data = {
             "last_save": str2nr(strftime("%s")),
             "player": player_data }
-        writefile([json_encode(data)], './save_data.json')
+        writefile([json_encode(data)], globals.SAVE_DATA_LOCATION)
     }
 
     return self
@@ -227,7 +236,7 @@ def Manager(bufnr: number): dict<any>
             var btn_display_length = button.button.DisplayLength()
             var btn_start = button.pos
             var btn_end = TextPosition(btn_start.lnum, btn_start.col + btn_display_length - 1)
-            if text_pos.Between(btn_start, btn_end)
+            if text_pos.Between(btn_start, btn_end) && !button.button.disabled
                 button.button.OnSelect()
                 return
             endif
@@ -242,6 +251,7 @@ g:manager = Manager(bufadd('Animal Crossing'))
 g:game = Game(g:manager)
 
 g:manager.Open()
+g:game.OnCreate()
 g:game.Render()
 
 map <leader>hh <ScriptCmd>g:manager.Toggle()<CR>

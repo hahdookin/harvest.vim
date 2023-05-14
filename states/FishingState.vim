@@ -20,21 +20,21 @@ const fishes = [
 ]
 
 const fishes_art = [
-    Art.ArtToUIFrame(Art.fish_1),
-    Art.ArtToUIFrame(Art.fish_2),
-    Art.ArtToUIFrame(Art.fish_3),
-    Art.ArtToUIFrame(Art.fish_4),
-    Art.ArtToUIFrame(Art.fish_5),
-    Art.ArtToUIFrame(Art.fish_6),
-    Art.ArtToUIFrame(Art.fish_7),
-    Art.ArtToUIFrame(Art.fish_8),
-    Art.ArtToUIFrame(Art.fish_9),
-    Art.ArtToUIFrame(Art.fish_10),
-    Art.ArtToUIFrame(Art.fish_11),
-    Art.ArtToUIFrame(Art.fish_12),
-    Art.ArtToUIFrame(Art.fish_13),
-    Art.ArtToUIFrame(Art.fish_14),
-    Art.ArtToUIFrame(Art.fish_15),
+    Art.ArtToUIFrame(Art.Styled(Art.fish_1)),
+    Art.ArtToUIFrame(Art.Styled(Art.fish_2)),
+    Art.ArtToUIFrame(Art.Styled(Art.fish_3)),
+    Art.ArtToUIFrame(Art.Styled(Art.fish_4)),
+    Art.ArtToUIFrame(Art.Styled(Art.fish_5)),
+    Art.ArtToUIFrame(Art.Styled(Art.fish_6)),
+    Art.ArtToUIFrame(Art.Styled(Art.fish_7)),
+    Art.ArtToUIFrame(Art.Styled(Art.fish_8)),
+    Art.ArtToUIFrame(Art.Styled(Art.fish_9)),
+    Art.ArtToUIFrame(Art.Styled(Art.fish_10)),
+    Art.ArtToUIFrame(Art.Styled(Art.fish_11)),
+    Art.ArtToUIFrame(Art.Styled(Art.fish_12)),
+    Art.ArtToUIFrame(Art.Styled(Art.fish_13)),
+    Art.ArtToUIFrame(Art.Styled(Art.fish_14)),
+    Art.ArtToUIFrame(Art.Styled(Art.fish_15)),
 ]
 
 export def Fish(name: string, desc: string): dict<any>
@@ -95,6 +95,7 @@ export def FishingState(): dict<any>
     self.output = ''
     self.progress = ''
     self.catch = false
+    self.show_catch = false
     self.caught_fish_index = -1
     self.num_ticks = 0
     self.ticks_til_catch = 0
@@ -107,7 +108,8 @@ export def FishingState(): dict<any>
 
     self.DoFishing = () => {
         self.progress = ''
-        self.catch = Math.Randf() > 0.5
+        self.catch = true # Math.Randf() > 0.5
+        self.show_catch = false
         self.num_ticks = 0
         self.ticks_til_catch = self.catch ? 1 + Math.RandInt(MAX_TICKS - 1) : MAX_TICKS
         self.caught_fish_index = Math.RandInt(fishes->len())
@@ -158,22 +160,34 @@ export def FishingState(): dict<any>
         elseif self.fishing_state == FISHING_STATE.CATCH_SUCCESS
             const caught_fish = fishes[self.caught_fish_index]
             self.progress = $'Caught something! {caught_fish}'
+            self.show_catch = true
         elseif self.fishing_state == FISHING_STATE.CATCH_FAILURE
             self.progress = 'Better luck next time...'
+            self.show_catch = true
         endif
     }
 
     self.GetFrame = () => {
         var left: list<any> = [
-            [self.progress],
-            [], # [self.output],
-            [], # [$"num_ticks: {self.num_ticks}"],
-            [], # [$"ticks_til_catch: {self.ticks_til_catch}"],
-            [], # [$"catch: {self.catch}"],
-            [], # [$"current_frame: {self.current_frame}"],
-            [cast_btn],
             [overworld_btn],
+            [cast_btn],
+            [self.progress],
+            # [], # [self.output],
+            # [], # [$"num_ticks: {self.num_ticks}"],
+            # [], # [$"ticks_til_catch: {self.ticks_til_catch}"],
+            # [], # [$"catch: {self.catch}"],
+            # [], # [$"current_frame: {self.current_frame}"],
         ]
+        if self.fishing_state == FISHING_STATE.CATCH_SUCCESS && self.show_catch
+            # left += Art.ArtToUIFrame(Art.fish_4)
+            const keep_btn = Button("Keep")
+            const release_btn = Button("Release")
+            const art = Math.RandChoice(fishes_art)
+            const btns = [ [keep_btn], [release_btn] ]
+            left += UI.JustifyLines(art, btns, 32)
+        endif
+
+
         var right = FISHING_STATE_FRAMES[self.fishing_state][self.current_frame]
 
         self.IncrementAnimFrame()

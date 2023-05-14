@@ -13,6 +13,10 @@ export def RandInt(max: number): number
     return RandRange(0, max)
 enddef
 
+export def RandChoice(arr: list<any>): any
+    return arr[RandInt(arr->len())]
+enddef
+
 export def Clamp(n: number, min: number, max: number): number
     if n < min
         return min
