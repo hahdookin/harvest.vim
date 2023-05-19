@@ -7,6 +7,7 @@ import "./ability.vim" as Ability
 import "./globals.vim"
 import "./state_machine.vim"
 import "./states/FarmState.vim"
+import "./states/ShopState.vim"
 import "./states.vim"
 import "./text_position.vim"
 
@@ -16,10 +17,17 @@ const Attack = Ability.Attack
 const StateMachine = state_machine.StateMachine
 const Town = states.Town
 const Farm = FarmState.Farm
-const Shop = states.Shop
+const Shop = ShopState.Shop
 const TextPosition = text_position.TextPosition
 const PlantedCrop = FarmState.PlantedCrop
 const Crop = FarmState.Crop
+
+if prop_type_get('ButtonEnabled')->empty()
+    prop_type_add('ButtonEnabled', { highlight: 'Constant' })
+endif
+if prop_type_get('ButtonDisabled')->empty()
+    prop_type_add('ButtonDisabled', { highlight: 'Ignore' })
+endif
 
 def DelayedText(text: string, delay: number = 50): dict<any>
     final self: dict<any> = {
@@ -222,6 +230,17 @@ def Manager(bufnr: number): dict<any>
                 self.buttons[0].pos.CursorTo()
                 self.button_index = 0
             endif
+
+            # Add props to buttons
+            for button in self.buttons
+                const pos = button.pos
+                const disabled = button.button.disabled
+                const props = { 
+                    bufnr: self.bufnr,
+                    type: $'Button{disabled ? "Disabled" : "Enabled"}', 
+                    length: button.button.DisplayLength() }
+                prop_add(pos.lnum, pos.col, props)
+            endfor
         endif
     }
 

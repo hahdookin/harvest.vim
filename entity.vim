@@ -22,24 +22,24 @@ enddef
 
 export def Player(): dict<any> # extends Entity
     final self = Entity()
-    
-    self.name = "Player"
-    self.gold = 0
-    self.health = 10
-    self.experience = 0
-    self.level = 1
-    self.equipment = {
-        neck: null,
-        weapon: null,
-        hands: null,
-        feet: null,
+
+    self->extend({
+        name: "Player",
+        gold: 0,
+        health: 10,
+        experience: 0,
+        level: 1,
+        items: [],
+        equipment: {
+            neck: null,
+            weapon: null,
+            hands: null,
+            feet: null,
+        },
+    })
+    self.AddItem = (i) => {
+        self.items->add(i)
     }
-    self.items = ["a", "b", "c", "d"]
-    # self.items = [
-    #     Item("Fishing Pole I", 100, 50),
-    #     Item("Shovel I", 200, 100),
-    #     Item("Hoe II", 300, 150),
-    # ]
 
     return self
 enddef

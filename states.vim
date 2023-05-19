@@ -5,7 +5,6 @@ import "./button.vim"
 import "./globals.vim"
 import "./math.vim" as Math
 import "./ui.vim" as UI
-import "./item.vim"
 
 var npcs = [
     'Blossom',
@@ -29,7 +28,6 @@ var npcs = [
 ]
 
 const Button = button.Button
-const Item = item.Item
 const TEXT_WIDTH = globals.TEXT_WIDTH
 
 var json_str = join(readfile("./dialogue.json"), "\n")
@@ -48,52 +46,6 @@ export def Town(): dict<any>
 
     return self
 enddef
-
-
-export def Shop(): dict<any>
-    final self: dict<any> = {}
-    self.items = [
-        Item("Fishing Pole I", 100, 50, 'e'),
-        Item("Shovel I", 200, 100, 'e'),
-        Item("Hoe II", 300, 150, 'e'),
-        Item("Couch", 300, 150, 'c'),
-        Item("Jeans", 300, 150, 'c'),
-        Item("Iced Coffee", 300, 150, 'f'),
-        Item("Matcha Tea Powder", 300, 150, 'f'),
-    ]
-    return self
-enddef
-
-
-#export def FarmState(): dict<any>
-#    final self = GameState()
-
-#    var overworld_btn = Button("Overworld", () => {
-#        self.state_machine.TransitionTo("Overworld")
-#        self.game_ref.Render()
-#    })
-
-#    self.GetFrame = () => {
-#        var farm = self.game_ref.farm
-#        var crops = []
-#        for crop in farm.plots
-#            var capture_crop = crop.crop.name
-#            var btn = Button(crop.GetGrowthSymbol(), () => {
-#                echow $"{capture_crop}: {crop.GetGrowthProgress()}"
-#            }, '[%s]')
-#            crops->add(btn)
-#        endfor
-#        return [
-#            #UI.CenterLine(repeat("=", 40), TEXT_WIDTH),
-#            UI.SpaceEvenly(crops, TEXT_WIDTH, [20, 20]),
-#            [""],
-#            [overworld_btn]
-#        ]
-#    }
-
-#    return self
-#enddef
-
 
 export def GameState(): dict<any>
     final self: dict<any> = {
@@ -228,81 +180,6 @@ export def StartGame(): dict<any>
         town.name = self.town_name
         self.game_ref.town = town
         echow town
-    }
-
-    return self
-enddef
-
-#+---+---+---+---+      +---+---+---+---+
-#|   |   |   |   |      |   |   |   |   |
-#+---+---+---+---+  <-  +---+---+---+---+
-#|   |   |   |   |      |   |   |   |   |
-#+---+---+---+---+  ->  +---+---+---+---+
-#|   |   |   |   |      |   |   |   |   |
-#+---+---+---+---+      +---+---+---+---+
-export def ShopState(): dict<any>
-    final self = GameState()
-
-    var overworld_btn = Button("Overworld", () => {
-        self.state_machine.TransitionTo("Overworld")
-        self.game_ref.Render()
-    })
-
-    self.Update = () => {
-        # echow self.game_ref
-    }
-
-    const rows = 3
-    const cols = 4
-    const slots = rows * cols
-    self.buttons = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
-    # self.buttons = self.items->mapnew((_, item) => Button(item.category, () => {
-    #     # echow $"Name: {item.name} Buy: {item.buy_price} Sell: {item.sell_price}"
-    #     echow $"Name: {item.name}"
-    # }, '%s'))
-    self.buttons->map((_, val) => Button(val, () => {
-        echow $"Button: {val}"
-    }, '%s'))
-    for i in range(slots - self.buttons->len())
-        self.buttons->add(null)
-    endfor
-
-    const horiz_sep_start = '+---'
-    const horiz_sep_end = '---+'
-    const horiz_sep_mid = repeat(['+'], cols - 1)->join('---')
-    const horiz_sep = horiz_sep_start .. horiz_sep_mid .. horiz_sep_end
-    const vert_sep_start = '| '
-    const vert_sep_mid   = ' | '
-    const vert_sep_end   = ' |'
-
-    var lines: list<any> = [[horiz_sep]]
-    var cur_row: list<any> = []
-    for row in range(rows)
-        cur_row->add(vert_sep_start)
-        for col in range(cols)
-            var btn = self.buttons[row * cols + col]
-            cur_row->add(btn ?? " ")
-            cur_row->add(col == cols - 1 ? '' : vert_sep_mid)
-        endfor
-        cur_row->add(vert_sep_end)
-        lines->add(cur_row)
-        lines->add([horiz_sep])
-        cur_row = []
-    endfor
-
-    self.GetFrame = () => {
-        var player = self.game_ref.player
-        var left: list<any> = []
-        left->add(["Welcome to the shop!"])
-        for line in lines
-            left->add(line)
-        endfor
-        left->add([""])
-        left->add([overworld_btn])
-        # var right = Art.fish_3->mapnew((_, val) => [val])
-        var right = Art.ArtToUIFrame(Art.character_1)
-        return UI.JustifyLines(left, right, TEXT_WIDTH)
-        # return left
     }
 
     return self
